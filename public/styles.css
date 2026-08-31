@@ -134,6 +134,34 @@ textarea { resize: vertical; }
 .grid-2.nested { margin-bottom: 0; }
 @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
 
+.voice-picker {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin-top: 6px;
+}
+.voice-picker select { margin-top: 0; flex: 1; min-width: 0; }
+button.icon-btn {
+  width: 48px;
+  min-width: 48px;
+  padding: 0;
+  justify-content: center;
+  margin-top: 0;
+}
+button.icon-btn .material-symbols-outlined { font-size: 22px; }
+button.icon-btn.playing {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+}
+.voice-desc {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--md-on-surface-variant);
+  min-height: 16px;
+}
+
 .form-footer {
   display: flex;
   align-items: center;

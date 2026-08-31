@@ -256,6 +256,114 @@ form.addEventListener("submit", async (e) => {
 
 document.getElementById("refreshBtn").addEventListener("click", loadSessions);
 
+/* ---------- Stimmen-Hörbeispiel ---------- */
+
+const VOICE_DESCRIPTIONS = {
+  marin: "Natürlich und klar – von OpenAI empfohlen",
+  cedar: "Warm und ruhig – von OpenAI empfohlen",
+  alloy: "Neutral und ausgewogen",
+  echo: "Klar und etwas tiefer",
+  shimmer: "Heller, freundlicher Klang",
+  verse: "Lebendig und ausdrucksstark",
+};
+
+const voiceSelect = document.getElementById("voiceSelect");
+const voiceDesc = document.getElementById("voiceDesc");
+const previewVoiceBtn = document.getElementById("previewVoiceBtn");
+const previewVoiceIcon = document.getElementById("previewVoiceIcon");
+
+let previewAudio = null;
+let previewObjectUrl = null;
+
+function updateVoiceDesc() {
+  voiceDesc.textContent = VOICE_DESCRIPTIONS[voiceSelect.value] || "";
+}
+
+function resetPreviewButton() {
+  previewVoiceBtn.classList.remove("playing");
+  previewVoiceBtn.disabled = false;
+  previewVoiceIcon.textContent = "play_arrow";
+  previewVoiceBtn.title = "Hörbeispiel abspielen";
+}
+
+function stopPreview() {
+  if (previewAudio) {
+    previewAudio.pause();
+    previewAudio.removeAttribute("src");
+    previewAudio = null;
+  }
+  if (previewObjectUrl) {
+    URL.revokeObjectURL(previewObjectUrl);
+    previewObjectUrl = null;
+  }
+  resetPreviewButton();
+}
+
+voiceSelect.addEventListener("change", () => {
+  stopPreview();
+  updateVoiceDesc();
+});
+updateVoiceDesc();
+
+previewVoiceBtn.addEventListener("click", async () => {
+  if (previewAudio && !previewAudio.paused) {
+    stopPreview();
+    return;
+  }
+
+  previewVoiceBtn.disabled = true;
+  previewVoiceIcon.textContent = "hourglass_top";
+  formError.classList.add("hidden");
+
+  try {
+    const language = form.elements.language.value;
+    const headers = {
+      "Content-Type": "application/json",
+      ...(getKey() ? { "x-dashboard-key": getKey() } : {}),
+      ...devKeyHeaders(),
+    };
+    const doFetch = () =>
+      fetch("/api/voice-preview", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ voice: voiceSelect.value, language }),
+      });
+
+    let res = await doFetch();
+    if (res.status === 401) {
+      const pw = prompt("Dashboard-Passwort:");
+      if (pw === null) throw new Error("Abgebrochen.");
+      localStorage.setItem("dashboardKey", pw);
+      headers["x-dashboard-key"] = pw;
+      res = await doFetch();
+    }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || `Fehler ${res.status}`);
+    }
+
+    stopPreview();
+    const blob = await res.blob();
+    previewObjectUrl = URL.createObjectURL(blob);
+    previewAudio = new Audio(previewObjectUrl);
+    previewAudio.addEventListener("ended", resetPreviewButton);
+    previewAudio.addEventListener("error", () => {
+      stopPreview();
+      formError.textContent = "Hörbeispiel konnte nicht abgespielt werden.";
+      formError.classList.remove("hidden");
+    });
+    await previewAudio.play();
+    previewVoiceBtn.disabled = false;
+    previewVoiceBtn.classList.add("playing");
+    previewVoiceIcon.textContent = "stop";
+    previewVoiceBtn.title = "Wiedergabe stoppen";
+  } catch (err) {
+    stopPreview();
+    formError.textContent = err.message;
+    formError.classList.remove("hidden");
+  }
+});
+
 /* ---------- Tabs ---------- */
 
 document.querySelectorAll(".tab").forEach((tab) => {
