@@ -2,7 +2,7 @@
   "name": "kisruptiv-voicebot",
   "version": "0.1.0",
   "private": true,
-  "description": "KI-Voice-Bot für Google Meet: nimmt als Teilnehmer an Meetings teil, verfolgt ein Ziel, stellt Fragen und bewertet, ob ein Follow-up lohnt.",
+  "description": "KI-Voice-Bot für Google Meet und Microsoft Teams: nimmt als Teilnehmer an Meetings teil, verfolgt ein Ziel, stellt Fragen und bewertet, ob ein Follow-up lohnt.",
   "type": "module",
   "scripts": {
     "dev": "netlify dev",

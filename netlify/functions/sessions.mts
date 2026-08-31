@@ -68,8 +68,10 @@ async function create(req: Request): Promise<Response> {
   const botName = String(body.botName || "").trim();
   const goal = String(body.goal || "").trim();
 
-  if (!/^https:\/\/meet\.google\.com\//.test(meetingUrl)) {
-    return errorResponse("Bitte eine gültige Google-Meet-URL angeben (https://meet.google.com/...).");
+  if (!isSupportedMeetingUrl(meetingUrl)) {
+    return errorResponse(
+      "Bitte eine gültige Google-Meet- oder Microsoft-Teams-URL angeben (https://meet.google.com/..., https://teams.microsoft.com/... oder https://teams.live.com/...).",
+    );
   }
   if (!botName) return errorResponse("Bitte einen Bot-Namen angeben.");
   if (!goal) return errorResponse("Bitte ein Ziel für das Meeting angeben.");
@@ -189,6 +191,21 @@ async function leave(session: Session, req: Request): Promise<Response> {
 async function regenerateReport(session: Session): Promise<Response> {
   const report = await generateReport(session.id, true);
   return json({ report });
+}
+
+/** Unterstützte Plattformen: Google Meet und Microsoft Teams (Business + Privat). */
+function isSupportedMeetingUrl(url: string): boolean {
+  try {
+    const { protocol, hostname } = new URL(url);
+    if (protocol !== "https:") return false;
+    return (
+      hostname === "meet.google.com" ||
+      hostname === "teams.microsoft.com" ||
+      hostname === "teams.live.com"
+    );
+  } catch {
+    return false;
+  }
 }
 
 const MAX_DOCS = 5;
