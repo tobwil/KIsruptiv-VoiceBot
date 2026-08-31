@@ -1,6 +1,6 @@
 # KIsruptiv VoiceBot
 
-Ein KI-Voice-Bot, der stellvertretend an **Google-Meet-Terminen** teilnimmt – wie eine intelligente Mailbox, nur für Meetings.
+Ein KI-Voice-Bot, der stellvertretend an **Google-Meet- und Microsoft-Teams-Terminen** teilnimmt – wie eine intelligente Mailbox, nur für Meetings.
 
 Du gibst dem Bot eine Meeting-URL, einen Namen und ein Ziel (z. B. *„Verstehen, was das Angebot des Einladenden ist“*). Der Bot tritt dem Meeting als Teilnehmer bei, führt das Gespräch per Sprache, stellt deine vordefinierten Fragen, gibt nur freigegebene Antworten – und bewertet am Ende, ob das Thema **„wertig“ genug** für einen echten Kontakt mit dir ist. Nach dem Meeting bekommst du einen strukturierten Bericht mit Zusammenfassung, Angebot, Score (1–10) und Empfehlung.
 
@@ -24,7 +24,7 @@ Netlify Functions ──2. Bot anlegen──▶ Recall.ai-Bot tritt bei        �
 6. Abschlussbericht (Score, Empfehlung, Zusammenfassung) via Report-Modell
 ```
 
-- **[Recall.ai](https://www.recall.ai)** stellt die Meeting-Bot-Infrastruktur: Der Bot tritt per URL jedem Google Meet bei (Name frei wählbar) und streamt über die *Output-Media*-API eine Webseite als Kamera/Audio ins Meeting.
+- **[Recall.ai](https://www.recall.ai)** stellt die Meeting-Bot-Infrastruktur: Der Bot tritt per URL jedem Google Meet oder Microsoft-Teams-Meeting bei (Name frei wählbar) und streamt über die *Output-Media*-API eine Webseite als Kamera/Audio ins Meeting.
 - Diese Webseite (`public/agent.html`) verbindet sich per WebRTC mit der **OpenAI Realtime API** (`gpt-realtime`): Meeting-Audio geht an die KI, die KI-Stimme zurück ins Meeting.
 - Die KI bekommt dein Ziel, deine Fragen, dein freigegebenes Wissen und deine Bewertungskriterien als Instruktionen und protokolliert alles über das Backend (Netlify Functions + Netlify Blobs).
 - Nach dem Meeting erstellt ein Report-Modell (Standard: `gpt-5-mini`) den Abschlussbericht.
@@ -81,7 +81,7 @@ Am einfachsten testet man direkt gegen ein Netlify-Deployment (`npx netlify depl
 
 ## Bedienung
 
-1. **Meeting-URL** – der Google-Meet-Link, den du erhalten hast.
+1. **Meeting-URL** – der Google-Meet- oder Teams-Link, den du erhalten hast (`meet.google.com`, `teams.microsoft.com` oder `teams.live.com`).
 2. **Bot-Name** – so erscheint der Bot in der Teilnehmerliste (z. B. „Alex (Assistenz Tobias)“).
 3. **Ziel** – was der Bot herausfinden soll.
 4. **Vordefinierte Fragen** – eine pro Zeile; der Bot arbeitet sie gesprächsnatürlich ab.
@@ -132,7 +132,7 @@ Alle Variablen in [`.env.example`](.env.example). Die wichtigsten:
 
 ## Bekannte Grenzen (MVP)
 
-- Nur Google Meet (Recall.ai unterstützt auch Zoom/Teams/Webex – die `createBot`-Konfiguration in `netlify/lib/recall.mts` wäre dafür leicht erweiterbar).
-- Der Gastgeber muss den Bot aus dem Wartebereich einlassen (normales Google-Meet-Verhalten für Gäste).
+- Google Meet und Microsoft Teams (Recall.ai unterstützt auch Zoom/Webex – die `createBot`-Konfiguration in `netlify/lib/recall.mts` wäre dafür leicht erweiterbar).
+- Der Gastgeber muss den Bot aus dem Wartebereich/der Lobby einlassen (normales Gast-Verhalten bei Meet und Teams).
 - Persistenz über Netlify Blobs (einfache JSON-Dokumente). Für viele parallele Meetings/Team-Nutzung wäre Netlify Database (Postgres) der nächste Schritt.
 - Keine Kalender-Integration – Meetings werden manuell per URL gestartet.

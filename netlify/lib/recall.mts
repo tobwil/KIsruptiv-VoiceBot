@@ -46,7 +46,7 @@ export async function createBot(auth: RecallAuth, params: CreateBotParams): Prom
           config: { url: params.agentPageUrl },
         },
       },
-      variant: { google_meet: variant },
+      variant: { google_meet: variant, microsoft_teams: variant },
       recording_config: {
         include_bot_in_recording: { audio: true },
       },
