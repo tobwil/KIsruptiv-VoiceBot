@@ -2,7 +2,20 @@
 
 Ein KI-Voice-Bot, der stellvertretend an **Google-Meet- und Microsoft-Teams-Terminen** teilnimmt – wie eine intelligente Mailbox, nur für Meetings.
 
-Du gibst dem Bot eine Meeting-URL, einen Namen und ein Ziel (z. B. *„Verstehen, was das Angebot des Einladenden ist“*). Der Bot tritt dem Meeting als Teilnehmer bei, führt das Gespräch per Sprache, stellt deine vordefinierten Fragen, gibt nur freigegebene Antworten – und bewertet am Ende, ob das Thema **„wertig“ genug** für einen echten Kontakt mit dir ist. Nach dem Meeting bekommst du einen strukturierten Bericht mit Zusammenfassung, Angebot, Score (1–10) und Empfehlung.
+Du gibst dem Bot eine Meeting-URL, einen Namen, eine **Rolle** und ein Ziel. Der Bot tritt dem Meeting als Teilnehmer bei, führt das Gespräch per Sprache, stellt deine vordefinierten Fragen/Agenda-Punkte und gibt nur freigegebene Antworten. Nach dem Meeting bekommst du einen strukturierten Bericht.
+
+**Rollen:**
+
+| Rolle | Verhalten | Bericht |
+| --- | --- | --- |
+| **Stellvertreter & Filter** (Standard) | Nimmt statt dir teil, qualifiziert das Anliegen und verlässt das Meeting selbstständig | Zusammenfassung, Kernpunkte, **Score 1–10 + Kontakt-Empfehlung** |
+| Wissensmedium / Experte | Beantwortet Fragen aus Wissen & Dokumenten, während du dabei bist | Zusammenfassung, Kernpunkte, Fazit |
+| Moderator | Führt durch die Agenda, achtet auf Zeit & Beteiligung, fasst zusammen | Ergebnisse pro Agenda-Punkt, nächste Schritte |
+| Schlichter | Neutraler Vermittler: deeskaliert, arbeitet Gemeinsamkeiten heraus | Positionen, Annäherungen, Fazit |
+| Provokateur / Sparringspartner | Advocatus Diaboli: hinterfragt Annahmen pointiert, aber respektvoll | Stärkste Einwände und Antworten darauf |
+| Eigene Rolle | Frei beschreibbares Verhalten | Rollenbezogenes Fazit |
+
+In allen Rollen gilt: Der Bot legt zu Gesprächsbeginn offen, dass er eine KI ist und protokolliert.
 
 ## Wie es funktioniert
 
