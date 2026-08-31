@@ -193,6 +193,25 @@ function renderCard(s) {
     };
   }
 
+  const deleteBtn = card.querySelector(".s-delete");
+  deleteBtn.onclick = async () => {
+    const active = ["created", "joining", "in_call"].includes(s.status);
+    const warning = active
+      ? `Der Bot ist noch im Meeting „${s.config.botName}“. Er wird rausgeholt und alle Daten (Transkript, Bericht) werden endgültig gelöscht. Fortfahren?`
+      : `Meeting „${s.config.botName}“ vom ${formatDate(s.createdAt)} samt Transkript und Bericht endgültig löschen?`;
+    if (!confirm(warning)) return;
+    deleteBtn.disabled = true;
+    try {
+      await api(`/api/sessions/${s.id}`, { method: "DELETE" });
+      openDetails.delete(s.id);
+      sessions = sessions.filter((x) => x.id !== s.id);
+      renderList();
+    } catch (err) {
+      alert(err.message);
+      deleteBtn.disabled = false;
+    }
+  };
+
   const toggleBtn = card.querySelector(".s-toggle");
   const detailEl = card.querySelector(".session-detail");
   toggleBtn.onclick = async () => {

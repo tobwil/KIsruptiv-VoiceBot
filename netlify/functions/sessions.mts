@@ -10,7 +10,14 @@ import {
   type RecallAuth,
 } from "../lib/recall.mts";
 import { generateReport } from "../lib/report.mts";
-import { getReport, getSession, getTranscript, listSessions, saveSession } from "../lib/store.mts";
+import {
+  deleteSessionData,
+  getReport,
+  getSession,
+  getTranscript,
+  listSessions,
+  saveSession,
+} from "../lib/store.mts";
 import {
   publicSession,
   type BotRole,
@@ -57,6 +64,7 @@ export default async (req: Request, context: Context) => {
 
     if (!action) {
       if (req.method === "GET") return detail(session, req);
+      if (req.method === "DELETE") return remove(session, req);
       return errorResponse("Methode nicht erlaubt.", 405);
     }
 
@@ -210,6 +218,21 @@ async function leave(session: Session, req: Request): Promise<Response> {
 async function regenerateReport(session: Session): Promise<Response> {
   const report = await generateReport(session.id, true);
   return json({ report });
+}
+
+/** Löscht ein Meeting samt Transkript und Bericht; aktiver Bot wird vorher rausgeholt. */
+async function remove(session: Session, req: Request): Promise<Response> {
+  const active = ["created", "joining", "in_call"].includes(session.status);
+  if (active && session.recallBotId) {
+    const auth = recallAuth(req, session);
+    if (auth) {
+      await leaveCall(auth, session.recallBotId).catch((err) =>
+        console.warn("leave_call beim Löschen fehlgeschlagen (fahre fort):", err),
+      );
+    }
+  }
+  await deleteSessionData(session.id);
+  return json({ ok: true });
 }
 
 /** Unterstützte Plattformen: Google Meet und Microsoft Teams (Business + Privat). */
