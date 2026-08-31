@@ -38,3 +38,13 @@ export async function saveReport(id: string, report: Report): Promise<void> {
 export async function getReport(id: string): Promise<Report | null> {
   return (await store().get(`reports/${id}`, { type: "json" })) as Report | null;
 }
+
+/** Löscht alle Daten einer Session: Konfiguration, Transkript und Bericht. */
+export async function deleteSessionData(id: string): Promise<void> {
+  const s = store();
+  await Promise.all([
+    s.delete(`sessions/${id}`),
+    s.delete(`transcripts/${id}`),
+    s.delete(`reports/${id}`),
+  ]);
+}

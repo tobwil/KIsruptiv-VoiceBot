@@ -233,6 +233,8 @@ button.tonal.danger { background: var(--md-error-container); color: var(--md-err
 
 button.text { background: none; color: var(--md-primary); padding: 8px 14px; }
 button.text:hover:not(:disabled) { background: var(--md-surface-variant); }
+button.text.danger { color: var(--md-error); margin-left: auto; }
+button.text.danger:hover:not(:disabled) { background: var(--md-error-container); }
 
 .error { color: var(--md-error); margin-top: 12px; font-size: 14px; }
 .hidden { display: none !important; }
