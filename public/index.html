@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KIsruptiv VoiceBot – Meeting-Assistent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-bar">
+    <div class="container app-bar-inner">
+      <div class="app-title">
+        <span class="material-symbols-outlined app-icon">smart_toy</span>
+        <div>
+          <h1>KIsruptiv VoiceBot</h1>
+          <p class="tagline">Dein KI-Stellvertreter für Google-Meet-Termine</p>
+        </div>
+      </div>
+    </div>
+    <nav class="container tabs" role="tablist">
+      <button class="tab active" data-panel="meetingsPanel" role="tab">
+        <span class="material-symbols-outlined">videocam</span> Meetings
+      </button>
+      <button class="tab" data-panel="devPanel" role="tab">
+        <span class="material-symbols-outlined">code</span> Dev
+      </button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- ============ Tab: Meetings ============ -->
+    <div id="meetingsPanel" class="tab-panel">
+      <section class="card">
+        <h2>Bot in ein Meeting schicken</h2>
+        <form id="createForm">
+          <div class="grid-2">
+            <label>
+              Google-Meet-URL <span class="req">*</span>
+              <input type="url" name="meetingUrl" placeholder="https://meet.google.com/abc-defg-hij" required />
+            </label>
+            <label>
+              Bot-Name im Meeting <span class="req">*</span>
+              <input type="text" name="botName" placeholder="z. B. Alex (Assistenz Tobias)" required maxlength="100" />
+            </label>
+          </div>
+          <div class="grid-2">
+            <label>
+              Wen vertritt der Bot?
+              <input type="text" name="principalName" placeholder="z. B. Tobias" value="Tobias" />
+            </label>
+            <div class="grid-2 nested">
+              <label>
+                Sprache
+                <select name="language">
+                  <option value="Deutsch" selected>Deutsch</option>
+                  <option value="Englisch">Englisch</option>
+                  <option value="auto">Automatisch</option>
+                </select>
+              </label>
+              <label>
+                Stimme
+                <select name="voice">
+                  <option value="marin" selected>Marin</option>
+                  <option value="cedar">Cedar</option>
+                  <option value="alloy">Alloy</option>
+                  <option value="echo">Echo</option>
+                  <option value="shimmer">Shimmer</option>
+                  <option value="verse">Verse</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <label>
+            Ziel des Meetings <span class="req">*</span>
+            <textarea name="goal" rows="2" required placeholder="z. B. Verstehen, was das Angebot des Einladenden ist, was es kostet und ob es für uns relevant ist."></textarea>
+          </label>
+          <label>
+            Vordefinierte Fragen <span class="hint">(eine pro Zeile, optional)</span>
+            <textarea name="questions" rows="4" placeholder="Was genau bietet ihr an?&#10;Was kostet das konkret?&#10;Gibt es Referenzkunden in unserer Branche?"></textarea>
+          </label>
+          <label>
+            Wissen &amp; erlaubte Antworten <span class="hint">(was der Bot über dich sagen darf, optional)</span>
+            <textarea name="knowledge" rows="3" placeholder="z. B. Tobias ist Product Manager. Wir interessieren uns grundsätzlich für KI-Tools. Budgetentscheidungen trifft Tobias selbst."></textarea>
+          </label>
+          <label>
+            Wann ist das Thema „wertig“ genug für echten Kontakt? <span class="hint">(Bewertungskriterien, optional)</span>
+            <textarea name="worthinessCriteria" rows="3" placeholder="z. B. Konkretes Produkt mit klarem Preis, Bezug zu unserem Geschäft, keine generische Kaltakquise."></textarea>
+          </label>
+          <div class="form-footer">
+            <p class="disclosure-note">Hinweis: Der Bot gibt sich im Meeting als KI-Assistent zu erkennen und weist darauf hin, dass das Gespräch protokolliert wird.</p>
+            <button type="submit" class="filled" id="submitBtn">
+              <span class="material-symbols-outlined">send</span> Bot ins Meeting schicken
+            </button>
+          </div>
+          <p id="formError" class="error hidden"></p>
+        </form>
+      </section>
+
+      <section>
+        <div class="list-header">
+          <h2>Meetings</h2>
+          <button class="tonal" id="refreshBtn">
+            <span class="material-symbols-outlined">refresh</span> Aktualisieren
+          </button>
+        </div>
+        <div id="sessionList" class="session-list">
+          <p class="empty">Noch keine Meetings.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ Tab: Dev ============ -->
+    <div id="devPanel" class="tab-panel hidden">
+      <section class="card">
+        <h2>API-Keys (Session-basiert)</h2>
+        <p class="dev-intro">
+          Keys werden im <strong>localStorage deines Browsers</strong> gespeichert und bei jedem
+          API-Aufruf mitgeschickt – du brauchst dann keine Werte in der Server-Umgebung (<code>.env</code> /
+          Netlify-Env). Sind beide gesetzt, haben die hier eingetragenen Keys Vorrang.
+        </p>
+        <form id="devForm">
+          <label>
+            Recall.ai API-Key
+            <input type="password" id="devRecallKey" placeholder="Key aus dem Recall.ai-Dashboard" autocomplete="off" />
+          </label>
+          <label>
+            Recall.ai-Region <span class="hint">(muss zur Region des Keys passen)</span>
+            <select id="devRecallRegion">
+              <option value="">Server-Standard (eu-central-1)</option>
+              <option value="eu-central-1">eu-central-1 (EU)</option>
+              <option value="us-east-1">us-east-1</option>
+              <option value="us-west-2">us-west-2</option>
+              <option value="ap-northeast-1">ap-northeast-1</option>
+            </select>
+          </label>
+          <label>
+            OpenAI API-Key
+            <input type="password" id="devOpenaiKey" placeholder="sk-..." autocomplete="off" />
+          </label>
+          <div class="dev-actions">
+            <button type="submit" class="filled">
+              <span class="material-symbols-outlined">save</span> Speichern
+            </button>
+            <button type="button" class="tonal danger" id="devClearBtn">
+              <span class="material-symbols-outlined">delete</span> Keys löschen
+            </button>
+          </div>
+          <p id="devStatus" class="dev-status"></p>
+        </form>
+        <div class="dev-note">
+          <span class="material-symbols-outlined">info</span>
+          <div>
+            <p>Beim Start eines Meetings werden die Keys einmalig serverseitig für diese Session hinterlegt.
+            Das ist nötig, damit der Bot im Meeting (er läuft auf Recall-Servern, nicht in deinem Browser)
+            und die Berichtserstellung darauf zugreifen können.</p>
+            <p>Die Keys liegen unverschlüsselt im localStorage – gedacht für Entwicklung und persönliche Nutzung.
+            Für den Produktivbetrieb besser Netlify-Umgebungsvariablen verwenden.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <template id="sessionCardTpl">
+    <article class="card session-card">
+      <div class="session-head">
+        <div>
+          <h3 class="s-botname"></h3>
+          <p class="s-meta"></p>
+        </div>
+        <span class="badge s-status"></span>
+      </div>
+      <div class="session-actions">
+        <button class="text s-toggle">Details</button>
+        <button class="text s-leave hidden">Bot aus Meeting holen</button>
+        <button class="text s-report hidden">Bericht erstellen</button>
+      </div>
+      <div class="session-detail hidden"></div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
