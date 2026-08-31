@@ -11,7 +11,22 @@ import {
 } from "../lib/recall.mts";
 import { generateReport } from "../lib/report.mts";
 import { getReport, getSession, getTranscript, listSessions, saveSession } from "../lib/store.mts";
-import { publicSession, type Session, type SessionConfig, type SessionStatus } from "../lib/types.mts";
+import {
+  publicSession,
+  type BotRole,
+  type Session,
+  type SessionConfig,
+  type SessionStatus,
+} from "../lib/types.mts";
+
+const VALID_ROLES: BotRole[] = [
+  "representative",
+  "expert",
+  "moderator",
+  "mediator",
+  "provocateur",
+  "custom",
+];
 
 /** Recall-Auth aus Request-Headern, Session-Dev-Keys oder env; null wenn kein Key vorhanden. */
 function recallAuth(req: Request | null, session?: Session | null): RecallAuth | null {
@@ -76,10 +91,14 @@ async function create(req: Request): Promise<Response> {
   if (!botName) return errorResponse("Bitte einen Bot-Namen angeben.");
   if (!goal) return errorResponse("Bitte ein Ziel für das Meeting angeben.");
 
+  const role: BotRole = VALID_ROLES.includes(body.role) ? body.role : "representative";
+
   const sessionConfig: SessionConfig = {
     meetingUrl,
     botName,
     principalName: String(body.principalName || "").trim() || "meinem Auftraggeber",
+    role,
+    roleDescription: String(body.roleDescription || "").trim().slice(0, 2000),
     goal,
     questions: Array.isArray(body.questions)
       ? body.questions.map((q: unknown) => String(q).trim()).filter(Boolean)

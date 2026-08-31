@@ -49,43 +49,59 @@
           </div>
           <div class="grid-2">
             <label>
-              Wen vertritt der Bot?
+              Rolle des Bots
+              <select name="role" id="roleSelect">
+                <option value="representative" selected>Stellvertreter &amp; Filter (nimmt statt dir teil)</option>
+                <option value="expert">Wissensmedium / Experte</option>
+                <option value="moderator">Moderator</option>
+                <option value="mediator">Schlichter</option>
+                <option value="provocateur">Provokateur / Sparringspartner</option>
+                <option value="custom">Eigene Rolle…</option>
+              </select>
+              <span class="voice-desc" id="roleDesc"></span>
+            </label>
+            <label>
+              Für wen ist der Bot im Einsatz?
               <input type="text" name="principalName" placeholder="z. B. Tobias" value="Tobias" />
             </label>
-            <div class="grid-2 nested">
-              <label>
-                Sprache
-                <select name="language">
-                  <option value="Deutsch" selected>Deutsch</option>
-                  <option value="Englisch">Englisch</option>
-                  <option value="auto">Automatisch</option>
+          </div>
+          <label id="roleDescriptionField" class="hidden">
+            Rollenbeschreibung <span class="hint">(bei „Eigene Rolle“; sonst optionale Zusatz-Anweisungen)</span>
+            <textarea name="roleDescription" rows="2" placeholder="z. B. Du bist Zeitwächter und Protokollant: greife nur ein, wenn ein Agenda-Punkt sein Zeitbudget sprengt."></textarea>
+          </label>
+          <div class="grid-2">
+            <label>
+              Sprache
+              <select name="language">
+                <option value="Deutsch" selected>Deutsch</option>
+                <option value="Englisch">Englisch</option>
+                <option value="auto">Automatisch</option>
+              </select>
+            </label>
+            <label>
+              Stimme
+              <div class="voice-picker">
+                <select name="voice" id="voiceSelect">
+                  <option value="marin" selected>Marin</option>
+                  <option value="cedar">Cedar</option>
+                  <option value="alloy">Alloy</option>
+                  <option value="echo">Echo</option>
+                  <option value="shimmer">Shimmer</option>
+                  <option value="verse">Verse</option>
                 </select>
-              </label>
-              <label>
-                Stimme
-                <div class="voice-picker">
-                  <select name="voice" id="voiceSelect">
-                    <option value="marin" selected>Marin</option>
-                    <option value="cedar">Cedar</option>
-                    <option value="alloy">Alloy</option>
-                    <option value="echo">Echo</option>
-                    <option value="shimmer">Shimmer</option>
-                    <option value="verse">Verse</option>
-                  </select>
-                  <button type="button" class="tonal icon-btn" id="previewVoiceBtn" title="Hörbeispiel abspielen" aria-label="Hörbeispiel der ausgewählten Stimme abspielen">
-                    <span class="material-symbols-outlined" id="previewVoiceIcon">play_arrow</span>
-                  </button>
-                </div>
-                <span class="voice-desc" id="voiceDesc"></span>
-              </label>
-            </div>
+                <button type="button" class="tonal icon-btn" id="previewVoiceBtn" title="Hörbeispiel abspielen" aria-label="Hörbeispiel der ausgewählten Stimme abspielen">
+                  <span class="material-symbols-outlined" id="previewVoiceIcon">play_arrow</span>
+                </button>
+              </div>
+              <span class="voice-desc" id="voiceDesc"></span>
+            </label>
           </div>
           <label>
-            Ziel des Meetings <span class="req">*</span>
+            <span id="goalLabel">Ziel / Auftrag des Meetings</span> <span class="req">*</span>
             <textarea name="goal" rows="2" required placeholder="z. B. Verstehen, was das Angebot des Einladenden ist, was es kostet und ob es für uns relevant ist."></textarea>
           </label>
           <label>
-            Vordefinierte Fragen <span class="hint">(eine pro Zeile, optional)</span>
+            <span id="questionsLabel">Vordefinierte Fragen</span> <span class="hint">(eine pro Zeile, optional)</span>
             <textarea name="questions" rows="4" placeholder="Was genau bietet ihr an?&#10;Was kostet das konkret?&#10;Gibt es Referenzkunden in unserer Branche?"></textarea>
           </label>
           <label>
@@ -104,8 +120,8 @@
             <ul class="doc-list" id="docList"></ul>
           </div>
           <label>
-            Wann ist das Thema „wertig“ genug für echten Kontakt? <span class="hint">(Bewertungskriterien, optional)</span>
-            <textarea name="worthinessCriteria" rows="3" placeholder="z. B. Konkretes Produkt mit klarem Preis, Bezug zu unserem Geschäft, keine generische Kaltakquise."></textarea>
+            <span id="criteriaLabel">Wann ist das Thema „wertig“ genug für echten Kontakt?</span> <span class="hint">(optional)</span>
+            <textarea name="worthinessCriteria" id="criteriaInput" rows="3" placeholder="z. B. Konkretes Produkt mit klarem Preis, Bezug zu unserem Geschäft, keine generische Kaltakquise."></textarea>
           </label>
           <div class="form-footer">
             <p class="disclosure-note">Hinweis: Der Bot gibt sich im Meeting als KI-Assistent zu erkennen und weist darauf hin, dass das Gespräch protokolliert wird.</p>

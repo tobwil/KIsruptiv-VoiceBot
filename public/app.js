@@ -15,6 +15,57 @@ const RECOMMENDATION_LABELS = {
   unclear: "Nicht eindeutig bewertbar",
 };
 
+const ROLE_META = {
+  representative: {
+    label: "Stellvertreter & Filter",
+    desc: "Nimmt statt dir teil, stellt deine Fragen und bewertet, ob sich ein Follow-up lohnt.",
+    goalLabel: "Ziel des Meetings",
+    questionsLabel: "Vordefinierte Fragen",
+    criteriaLabel: "Wann ist das Thema „wertig“ genug für echten Kontakt?",
+    criteriaPlaceholder: "z. B. Konkretes Produkt mit klarem Preis, Bezug zu unserem Geschäft, keine generische Kaltakquise.",
+  },
+  expert: {
+    label: "Wissensmedium / Experte",
+    desc: "Ist als Wissensquelle dabei und beantwortet Fragen aus Wissen und Dokumenten.",
+    goalLabel: "Auftrag / Thema des Meetings",
+    questionsLabel: "Punkte, die der Bot aktiv einbringen soll",
+    criteriaLabel: "Worauf soll der Bot besonders achten?",
+    criteriaPlaceholder: "z. B. Nur validierte Fakten aus den Dokumenten nennen; bei Preisfragen auf Tobias verweisen.",
+  },
+  moderator: {
+    label: "Moderator",
+    desc: "Führt durch die Agenda, achtet auf Zeit und Beteiligung, fasst Ergebnisse zusammen.",
+    goalLabel: "Ziel des Meetings",
+    questionsLabel: "Agenda-Punkte",
+    criteriaLabel: "Worauf soll der Bot besonders achten?",
+    criteriaPlaceholder: "z. B. Max. 10 Minuten pro Agenda-Punkt; am Ende müssen Verantwortlichkeiten stehen.",
+  },
+  mediator: {
+    label: "Schlichter",
+    desc: "Bleibt neutral, deeskaliert und arbeitet Gemeinsamkeiten heraus.",
+    goalLabel: "Anlass / Konfliktthema",
+    questionsLabel: "Punkte, die angesprochen werden sollen",
+    criteriaLabel: "Worauf soll der Bot besonders achten?",
+    criteriaPlaceholder: "z. B. Beide Seiten gleich viel Redezeit; Fokus auf Interessen statt Positionen.",
+  },
+  provocateur: {
+    label: "Provokateur / Sparringspartner",
+    desc: "Hinterfragt Annahmen pointiert, aber respektvoll – der Advocatus Diaboli.",
+    goalLabel: "Thema / These, die geprüft werden soll",
+    questionsLabel: "Einwände / Fragen, die der Bot platzieren soll",
+    criteriaLabel: "Worauf soll der Bot besonders achten?",
+    criteriaPlaceholder: "z. B. Business-Case und Annahmen zur Zahlungsbereitschaft hart prüfen; Ton bleibt kollegial.",
+  },
+  custom: {
+    label: "Eigene Rolle",
+    desc: "Definiere frei, wie sich der Bot verhalten soll (Rollenbeschreibung unten).",
+    goalLabel: "Ziel / Auftrag des Meetings",
+    questionsLabel: "Punkte/Fragen, die der Bot einbringen soll",
+    criteriaLabel: "Worauf soll der Bot besonders achten?",
+    criteriaPlaceholder: "z. B. Ergebnisse pro Tagesordnungspunkt festhalten.",
+  },
+};
+
 const listEl = document.getElementById("sessionList");
 const form = document.getElementById("createForm");
 const formError = document.getElementById("formError");
@@ -101,8 +152,9 @@ function renderCard(s) {
   card.dataset.id = s.id;
 
   card.querySelector(".s-botname").textContent = s.config.botName;
+  const roleLabel = (ROLE_META[s.config.role] || ROLE_META.representative).label;
   card.querySelector(".s-meta").textContent =
-    `${formatDate(s.createdAt)} · ${s.config.meetingUrl}`;
+    `${roleLabel} · ${formatDate(s.createdAt)} · ${s.config.meetingUrl}`;
 
   const badge = card.querySelector(".s-status");
   badge.textContent = STATUS_LABELS[s.status] || s.status;
@@ -177,22 +229,36 @@ async function fillDetail(id, el) {
 
 function renderDetail(data) {
   const { session, transcript, insights, report } = data;
+  const roleMeta = ROLE_META[session.config.role] || ROLE_META.representative;
   let html = "";
 
-  html += `<div class="detail-block"><h4>Ziel</h4><p>${escapeHtml(session.config.goal)}</p></div>`;
+  html += `<div class="detail-block"><h4>Rolle</h4><p>${escapeHtml(roleMeta.label)}</p></div>`;
+  html += `<div class="detail-block"><h4>Ziel / Auftrag</h4><p>${escapeHtml(session.config.goal)}</p></div>`;
 
   if (report) {
-    const cls = report.score >= 7 ? "good" : report.score >= 4 ? "mid" : "bad";
-    html += `
-      <div class="report-score">
-        <div class="score-circle ${cls}">${escapeHtml(String(report.score))}</div>
-        <div>
-          <strong>${escapeHtml(RECOMMENDATION_LABELS[report.recommendation] || report.recommendation)}</strong>
-          <p style="color: var(--muted); font-size: 13px;">${escapeHtml(report.reasoning)}</p>
-        </div>
-      </div>
-      <div class="detail-block"><h4>Zusammenfassung</h4><p>${escapeHtml(report.summary)}</p></div>
-      <div class="detail-block"><h4>Das Angebot</h4><p>${escapeHtml(report.offerDescription)}</p></div>`;
+    const hasScore = typeof report.score === "number";
+    if (hasScore) {
+      const cls = report.score >= 7 ? "good" : report.score >= 4 ? "mid" : "bad";
+      html += `
+        <div class="report-score">
+          <div class="score-circle ${cls}">${escapeHtml(String(report.score))}</div>
+          <div>
+            <strong>${escapeHtml(RECOMMENDATION_LABELS[report.recommendation] || report.recommendation)}</strong>
+            <p style="color: var(--md-on-surface-variant); font-size: 13px;">${escapeHtml(report.reasoning)}</p>
+          </div>
+        </div>`;
+    } else if (report.reasoning) {
+      html += `<div class="detail-block"><h4>Fazit</h4><p>${escapeHtml(report.reasoning)}</p></div>`;
+    }
+    html += `<div class="detail-block"><h4>Zusammenfassung</h4><p>${escapeHtml(report.summary)}</p></div>`;
+    const keyPoints = report.keyPoints && report.keyPoints.length
+      ? report.keyPoints
+      : report.offerDescription
+        ? [report.offerDescription]
+        : [];
+    if (keyPoints.length) {
+      html += `<div class="detail-block"><h4>Kernpunkte</h4><ul>${keyPoints.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul></div>`;
+    }
     if (report.nextSteps && report.nextSteps.length) {
       html += `<div class="detail-block"><h4>Nächste Schritte</h4><ul>${report.nextSteps.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul></div>`;
     }
@@ -348,6 +414,7 @@ form.addEventListener("submit", async (e) => {
     uploadedDocs = [];
     renderDocList();
     updateVoiceDesc();
+    applyRoleToForm();
     await loadSessions();
   } catch (err) {
     formError.textContent = err.message;
@@ -359,6 +426,30 @@ form.addEventListener("submit", async (e) => {
 });
 
 document.getElementById("refreshBtn").addEventListener("click", loadSessions);
+
+/* ---------- Rollen-Auswahl: dynamische Formular-Texte ---------- */
+
+const roleSelect = document.getElementById("roleSelect");
+const roleDescEl = document.getElementById("roleDesc");
+const roleDescriptionField = document.getElementById("roleDescriptionField");
+const goalLabel = document.getElementById("goalLabel");
+const questionsLabel = document.getElementById("questionsLabel");
+const criteriaLabel = document.getElementById("criteriaLabel");
+const criteriaInput = document.getElementById("criteriaInput");
+
+function applyRoleToForm() {
+  const meta = ROLE_META[roleSelect.value] || ROLE_META.representative;
+  roleDescEl.textContent = meta.desc;
+  goalLabel.textContent = meta.goalLabel;
+  questionsLabel.textContent = meta.questionsLabel;
+  criteriaLabel.textContent = meta.criteriaLabel;
+  criteriaInput.placeholder = meta.criteriaPlaceholder;
+  // Rollenbeschreibung: bei "Eigene Rolle" Pflicht-nah anzeigen, sonst als Option einblenden.
+  roleDescriptionField.classList.toggle("hidden", roleSelect.value === "representative");
+}
+
+roleSelect.addEventListener("change", applyRoleToForm);
+applyRoleToForm();
 
 /* ---------- Stimmen-Hörbeispiel ---------- */
 

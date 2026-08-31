@@ -6,18 +6,34 @@ export type SessionStatus =
   | "report_ready" // Abschlussbericht liegt vor
   | "error";
 
+/** Rolle/Modus des Bots im Meeting. */
+export type BotRole =
+  | "representative" // Stellvertreter & Filter (Original-Use-Case: nimmt statt dir teil, bewertet Wertigkeit)
+  | "expert" // Wissensmedium: beantwortet Fragen aus Wissen/Dokumenten
+  | "moderator" // führt durch Agenda, achtet auf Struktur und Redezeit
+  | "mediator" // Schlichter: deeskaliert, arbeitet Gemeinsamkeiten heraus
+  | "provocateur" // Sparringspartner/Advocatus Diaboli: hinterfragt pointiert
+  | "custom"; // frei beschriebene Rolle
+
 export interface SessionConfig {
   meetingUrl: string;
   botName: string;
-  /** Name der Person, die der Bot vertritt (z. B. "Tobias"). */
+  /** Name der Person, die der Bot vertritt bzw. begleitet (z. B. "Tobias"). */
   principalName: string;
-  /** Ziel des Meetings aus Sicht des Nutzers. */
+  /** Rolle/Modus des Bots. */
+  role: BotRole;
+  /** Freie Rollenbeschreibung (bei role = custom) bzw. zusätzliche Anweisungen. */
+  roleDescription: string;
+  /** Ziel/Auftrag des Meetings aus Sicht des Nutzers. */
   goal: string;
-  /** Vordefinierte Fragen, die der Bot stellen soll. */
+  /** Vordefinierte Fragen/Agenda-Punkte, die der Bot einbringen soll. */
   questions: string[];
   /** Wissen/Fakten, die der Bot als Antworten verwenden darf. */
   knowledge: string;
-  /** Kriterien, wann ein Thema "wertig" genug für echten Kontakt ist. */
+  /**
+   * Bewertungs-/Fokus-Kriterien. Im Stellvertreter-Modus: wann ist ein Thema
+   * "wertig" genug für echten Kontakt; in anderen Rollen: worauf besonders achten.
+   */
   worthinessCriteria: string;
   /** Gesprächssprache, z. B. "Deutsch", "Englisch" oder "auto". */
   language: string;
@@ -76,13 +92,18 @@ export interface TranscriptData {
 
 export interface Report {
   summary: string;
-  offerDescription: string;
-  score: number;
-  recommendation: "follow_up" | "decline" | "unclear";
+  /** Kernpunkte/Erkenntnisse des Gesprächs. */
+  keyPoints: string[];
+  /** Wertigkeits-Score 1-10; nur im Stellvertreter-Modus, sonst null. */
+  score: number | null;
+  /** Kontakt-Empfehlung; "none" außerhalb des Stellvertreter-Modus. */
+  recommendation: "follow_up" | "decline" | "unclear" | "none";
   reasoning: string;
   nextSteps: string[];
   openQuestions: string[];
   generatedAt: string;
+  /** Nur in Alt-Berichten vorhanden (früheres Schema). */
+  offerDescription?: string;
 }
 
 /** Öffentliche Sicht auf eine Session (ohne agentToken und devKeys). */
