@@ -14,8 +14,10 @@
         "npm:@netlify/blobs@^11.0.2",
         "npm:@netlify/functions@6",
         "npm:@types/node@^26.4.0",
+        "npm:mammoth@^1.12.2",
         "npm:netlify-cli@^27.4.1",
-        "npm:typescript@^5.9.2"
+        "npm:typescript@^5.9.2",
+        "npm:unpdf@^1.8.1"
       ]
     }
   }

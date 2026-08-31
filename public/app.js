@@ -230,6 +230,106 @@ async function refreshSession(id) {
   }
 }
 
+/* ---------- Kontext-Dokumente hochladen ---------- */
+
+const MAX_DOCS = 5;
+const docInput = document.getElementById("docInput");
+const docUploadBtn = document.getElementById("docUploadBtn");
+const docList = document.getElementById("docList");
+
+let uploadedDocs = []; // { name, text, chars, truncated }
+
+function renderDocList() {
+  docList.innerHTML = "";
+  for (let i = 0; i < uploadedDocs.length; i++) {
+    const doc = uploadedDocs[i];
+    const li = document.createElement("li");
+
+    const icon = document.createElement("span");
+    icon.className = "material-symbols-outlined";
+    icon.textContent = "description";
+
+    const name = document.createElement("span");
+    name.className = "doc-name";
+    name.textContent = doc.name;
+
+    const size = document.createElement("span");
+    size.className = "doc-size";
+    size.textContent = `${doc.chars.toLocaleString("de-DE")} Zeichen${doc.truncated ? " (gekürzt)" : ""}`;
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "doc-remove";
+    remove.title = "Entfernen";
+    remove.innerHTML = '<span class="material-symbols-outlined">close</span>';
+    remove.addEventListener("click", () => {
+      uploadedDocs.splice(i, 1);
+      renderDocList();
+    });
+
+    li.append(icon, name, size, remove);
+    docList.appendChild(li);
+  }
+  docUploadBtn.disabled = uploadedDocs.length >= MAX_DOCS;
+}
+
+async function extractDocument(file) {
+  const doUpload = () => {
+    const fd = new FormData();
+    fd.append("file", file);
+    // Kein Content-Type-Header: der Browser setzt die multipart-Boundary selbst.
+    return fetch("/api/extract-text", {
+      method: "POST",
+      headers: {
+        ...(getKey() ? { "x-dashboard-key": getKey() } : {}),
+        ...devKeyHeaders(),
+      },
+      body: fd,
+    });
+  };
+
+  let res = await doUpload();
+  if (res.status === 401) {
+    const pw = prompt("Dashboard-Passwort:");
+    if (pw === null) throw new Error("Abgebrochen.");
+    localStorage.setItem("dashboardKey", pw);
+    res = await doUpload();
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Fehler ${res.status}`);
+  return data;
+}
+
+docUploadBtn.addEventListener("click", () => docInput.click());
+
+docInput.addEventListener("change", async () => {
+  const files = Array.from(docInput.files || []);
+  docInput.value = "";
+  if (!files.length) return;
+  formError.classList.add("hidden");
+
+  for (const file of files) {
+    if (uploadedDocs.length >= MAX_DOCS) {
+      formError.textContent = `Maximal ${MAX_DOCS} Dokumente pro Meeting.`;
+      formError.classList.remove("hidden");
+      break;
+    }
+    const li = document.createElement("li");
+    li.className = "uploading";
+    li.innerHTML = `<span class="material-symbols-outlined">hourglass_top</span><span class="doc-name">${escapeHtml(file.name)}</span><span class="doc-size">wird verarbeitet…</span>`;
+    docList.appendChild(li);
+
+    try {
+      const doc = await extractDocument(file);
+      uploadedDocs.push(doc);
+    } catch (err) {
+      formError.textContent = err.message;
+      formError.classList.remove("hidden");
+    }
+    renderDocList();
+  }
+});
+
 /* ---------- Formular ---------- */
 
 form.addEventListener("submit", async (e) => {
@@ -240,10 +340,14 @@ form.addEventListener("submit", async (e) => {
 
   const fd = new FormData(form);
   const payload = Object.fromEntries(fd.entries());
+  payload.documents = uploadedDocs.map(({ name, text }) => ({ name, text }));
 
   try {
     await api("/api/sessions", { method: "POST", body: JSON.stringify(payload) });
     form.reset();
+    uploadedDocs = [];
+    renderDocList();
+    updateVoiceDesc();
     await loadSessions();
   } catch (err) {
     formError.textContent = err.message;

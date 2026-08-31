@@ -17,7 +17,7 @@ const AGENT_TOKEN = params.get("token");
 // Sicherheitsnetz: Bot verlässt das Meeting spätestens nach 90 Minuten.
 const MAX_MEETING_MS = 90 * 60 * 1000;
 // Wenn nach dem Verbinden so lange niemand spricht, stellt sich der Bot selbst vor.
-const GREETING_DELAY_MS = 6000;
+const GREETING_DELAY_MS = 3500;
 
 const statusEl = document.getElementById("status");
 const botNameEl = document.getElementById("botName");
@@ -77,10 +77,20 @@ async function main() {
     setMode("listening");
     setStatus("Ich höre zu");
 
-    // Falls niemand das Wort ergreift: selbst vorstellen.
+    // Aktive Vorstellung mit Pflicht-Offenlegung (KI + Protokollierung),
+    // falls nicht schon jemand das Gespräch eröffnet hat.
     setTimeout(() => {
       if (!state.anyInteraction && dataChannel && dataChannel.readyState === "open") {
-        sendEvent({ type: "response.create" });
+        sendEvent({
+          type: "response.create",
+          response: {
+            instructions:
+              `Noch niemand hat gesprochen. Eröffne jetzt das Meeting mit deiner Pflicht-Vorstellung: ` +
+              `Nenne deinen Namen "${botName}", sage klar, dass du ein KI-Assistent im Auftrag von ${principalName || "deinem Auftraggeber"} bist ` +
+              `und dass du das Gespräch protokollierst und anschließend an ${principalName || "deinen Auftraggeber"} übergibst. ` +
+              `Frage danach freundlich, ob ihr starten könnt.`,
+          },
+        });
       }
     }, GREETING_DELAY_MS);
 
