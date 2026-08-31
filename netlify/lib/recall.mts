@@ -1,22 +1,24 @@
 /** Minimaler Client für die Recall.ai-API (Meeting-Bot-Infrastruktur). */
 
-function baseUrl(): string {
-  const region = Netlify.env.get("RECALL_REGION") || "eu-central-1";
-  return `https://${region}.recall.ai`;
+export interface RecallAuth {
+  apiKey: string;
+  region: string;
 }
 
-function headers(): Record<string, string> {
-  const key = Netlify.env.get("RECALL_API_KEY");
-  if (!key) throw new Error("RECALL_API_KEY ist nicht gesetzt");
+function headers(auth: RecallAuth): Record<string, string> {
+  if (!auth.apiKey) throw new Error("Kein Recall.ai-API-Key vorhanden");
   return {
-    Authorization: `Token ${key}`,
+    Authorization: `Token ${auth.apiKey}`,
     "Content-Type": "application/json",
     Accept: "application/json",
   };
 }
 
-async function recallFetch(path: string, init?: RequestInit): Promise<any> {
-  const res = await fetch(`${baseUrl()}${path}`, { ...init, headers: headers() });
+async function recallFetch(auth: RecallAuth, path: string, init?: RequestInit): Promise<any> {
+  const res = await fetch(`https://${auth.region}.recall.ai${path}`, {
+    ...init,
+    headers: headers(auth),
+  });
   const text = await res.text();
   if (!res.ok) {
     throw new Error(`Recall.ai ${init?.method || "GET"} ${path} fehlgeschlagen (${res.status}): ${text}`);
@@ -31,9 +33,9 @@ export interface CreateBotParams {
   agentPageUrl: string;
 }
 
-export async function createBot(params: CreateBotParams): Promise<{ id: string }> {
+export async function createBot(auth: RecallAuth, params: CreateBotParams): Promise<{ id: string }> {
   const variant = Netlify.env.get("RECALL_BOT_VARIANT") || "web_4_core";
-  return recallFetch("/api/v1/bot/", {
+  return recallFetch(auth, "/api/v1/bot/", {
     method: "POST",
     body: JSON.stringify({
       meeting_url: params.meetingUrl,
@@ -52,12 +54,12 @@ export async function createBot(params: CreateBotParams): Promise<{ id: string }
   });
 }
 
-export async function getBot(botId: string): Promise<any> {
-  return recallFetch(`/api/v1/bot/${botId}/`);
+export async function getBot(auth: RecallAuth, botId: string): Promise<any> {
+  return recallFetch(auth, `/api/v1/bot/${botId}/`);
 }
 
-export async function leaveCall(botId: string): Promise<void> {
-  await recallFetch(`/api/v1/bot/${botId}/leave_call/`, { method: "POST" });
+export async function leaveCall(auth: RecallAuth, botId: string): Promise<void> {
+  await recallFetch(auth, `/api/v1/bot/${botId}/leave_call/`, { method: "POST" });
 }
 
 /**

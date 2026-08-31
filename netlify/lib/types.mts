@@ -32,6 +32,13 @@ export interface Assessment {
   nextSteps?: string;
 }
 
+/** Session-basierte API-Keys aus dem Dev-Tab (Alternative zu env-Variablen). */
+export interface DevKeys {
+  recallApiKey?: string;
+  recallRegion?: string;
+  openaiApiKey?: string;
+}
+
 export interface Session {
   id: string;
   createdAt: string;
@@ -39,6 +46,12 @@ export interface Session {
   config: SessionConfig;
   /** Geheimer Token, mit dem sich die Agent-Seite gegenüber der API ausweist. */
   agentToken: string;
+  /**
+   * Beim Meeting-Start hinterlegte Dev-Keys. Nötig, damit auch die Agent-Seite
+   * (läuft im Recall-Browser, ohne Zugriff auf den localStorage des Nutzers)
+   * und die Berichtserstellung die Keys nutzen können. Wird nie an Clients ausgeliefert.
+   */
+  devKeys?: DevKeys;
   recallBotId?: string;
   recallStatus?: string;
   assessment?: Assessment | null;
@@ -70,8 +83,8 @@ export interface Report {
   generatedAt: string;
 }
 
-/** Öffentliche Sicht auf eine Session (ohne agentToken). */
-export function publicSession(s: Session): Omit<Session, "agentToken"> {
-  const { agentToken, ...rest } = s;
+/** Öffentliche Sicht auf eine Session (ohne agentToken und devKeys). */
+export function publicSession(s: Session): Omit<Session, "agentToken" | "devKeys"> {
+  const { agentToken, devKeys, ...rest } = s;
   return rest;
 }

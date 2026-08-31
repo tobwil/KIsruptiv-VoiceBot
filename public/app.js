@@ -23,6 +23,25 @@ const submitBtn = document.getElementById("submitBtn");
 const openDetails = new Set();
 let sessions = [];
 
+/* ---------- Dev-Keys (Dev-Tab, localStorage) ---------- */
+
+function getDevKeys() {
+  try {
+    return JSON.parse(localStorage.getItem("devKeys") || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function devKeyHeaders() {
+  const keys = getDevKeys();
+  const headers = {};
+  if (keys.recallApiKey) headers["x-recall-key"] = keys.recallApiKey;
+  if (keys.recallRegion) headers["x-recall-region"] = keys.recallRegion;
+  if (keys.openaiApiKey) headers["x-openai-key"] = keys.openaiApiKey;
+  return headers;
+}
+
 /* ---------- API mit optionalem Dashboard-Passwort ---------- */
 
 function getKey() {
@@ -36,6 +55,7 @@ async function api(path, options = {}) {
       headers: {
         "Content-Type": "application/json",
         ...(getKey() ? { "x-dashboard-key": getKey() } : {}),
+        ...devKeyHeaders(),
         ...(options.headers || {}),
       },
     });
@@ -235,6 +255,71 @@ form.addEventListener("submit", async (e) => {
 });
 
 document.getElementById("refreshBtn").addEventListener("click", loadSessions);
+
+/* ---------- Tabs ---------- */
+
+document.querySelectorAll(".tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t === tab));
+    document.querySelectorAll(".tab-panel").forEach((panel) => {
+      panel.classList.toggle("hidden", panel.id !== tab.dataset.panel);
+    });
+  });
+});
+
+/* ---------- Dev-Tab: Keys im localStorage verwalten ---------- */
+
+const devForm = document.getElementById("devForm");
+const devRecallKey = document.getElementById("devRecallKey");
+const devRecallRegion = document.getElementById("devRecallRegion");
+const devOpenaiKey = document.getElementById("devOpenaiKey");
+const devStatus = document.getElementById("devStatus");
+
+function maskKey(key) {
+  if (!key) return "";
+  return key.length > 8 ? `${key.slice(0, 4)}…${key.slice(-4)}` : "•••";
+}
+
+function renderDevStatus() {
+  const keys = getDevKeys();
+  const parts = [];
+  if (keys.recallApiKey) parts.push(`Recall: ${maskKey(keys.recallApiKey)}`);
+  if (keys.openaiApiKey) parts.push(`OpenAI: ${maskKey(keys.openaiApiKey)}`);
+  if (keys.recallRegion) parts.push(`Region: ${keys.recallRegion}`);
+  if (parts.length) {
+    devStatus.classList.remove("warn");
+    devStatus.textContent = `Gespeichert – ${parts.join(" · ")}`;
+  } else {
+    devStatus.classList.add("warn");
+    devStatus.textContent = "Keine Keys im Browser gespeichert – es gelten die Server-Umgebungsvariablen.";
+  }
+}
+
+function loadDevForm() {
+  const keys = getDevKeys();
+  devRecallKey.value = keys.recallApiKey || "";
+  devRecallRegion.value = keys.recallRegion || "";
+  devOpenaiKey.value = keys.openaiApiKey || "";
+  renderDevStatus();
+}
+
+devForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const keys = {
+    recallApiKey: devRecallKey.value.trim() || undefined,
+    recallRegion: devRecallRegion.value || undefined,
+    openaiApiKey: devOpenaiKey.value.trim() || undefined,
+  };
+  localStorage.setItem("devKeys", JSON.stringify(keys));
+  renderDevStatus();
+});
+
+document.getElementById("devClearBtn").addEventListener("click", () => {
+  localStorage.removeItem("devKeys");
+  loadDevForm();
+});
+
+loadDevForm();
 
 /* ---------- Auto-Polling für aktive Meetings ---------- */
 

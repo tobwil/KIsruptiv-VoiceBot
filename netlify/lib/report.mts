@@ -1,3 +1,4 @@
+import { resolveKeys } from "./keys.mts";
 import { buildReportPrompt, REPORT_JSON_SCHEMA } from "./prompt.mts";
 import { getSession, getTranscript, saveReport, saveSession } from "./store.mts";
 import type { Report } from "./types.mts";
@@ -11,8 +12,8 @@ export async function generateReport(sessionId: string, force = false): Promise<
   if (!session) return null;
   if (session.hasReport && !force) return null;
 
-  const apiKey = Netlify.env.get("OPENAI_API_KEY");
-  if (!apiKey) throw new Error("OPENAI_API_KEY ist nicht gesetzt");
+  const apiKey = resolveKeys(null, session).openaiApiKey;
+  if (!apiKey) throw new Error("Kein OpenAI-API-Key vorhanden (Dev-Tab oder OPENAI_API_KEY).");
   const model = Netlify.env.get("OPENAI_REPORT_MODEL") || "gpt-5-mini";
 
   const data = await getTranscript(sessionId);

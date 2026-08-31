@@ -66,7 +66,8 @@ Danach das Dashboard unter der Netlify-URL öffnen, Meeting-URL einfügen, Ziel 
 
 ```bash
 cp .env.example .env   # Keys eintragen
-npx netlify dev
+npm install
+npm run dev            # Dashboard: http://localhost:8888
 ```
 
 Das Dashboard läuft dann auf `http://localhost:8888`. **Aber:** Der Recall-Bot muss die Agent-Seite aus dem Internet laden können. Für lokale Tests brauchst du daher einen Tunnel (z. B. [ngrok](https://ngrok.com)):
@@ -108,6 +109,8 @@ netlify/lib/
 ```
 
 ## Konfiguration
+
+**Dev-Tab:** API-Keys müssen nicht zwingend in die Server-Umgebung. Im Dashboard gibt es den Tab **Dev**, in dem Recall.ai-Key, Region und OpenAI-Key session-basiert hinterlegt werden können (localStorage des Browsers). Sie werden bei jedem API-Aufruf als Header mitgeschickt und beim Meeting-Start serverseitig für die jeweilige Session gespeichert (nötig für die Agent-Seite und den Bericht). Browser-Keys haben Vorrang vor Umgebungsvariablen. Für den Produktivbetrieb sind Netlify-Umgebungsvariablen die sicherere Wahl.
 
 Alle Variablen in [`.env.example`](.env.example). Die wichtigsten:
 

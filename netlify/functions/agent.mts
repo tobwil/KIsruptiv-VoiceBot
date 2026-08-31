@@ -1,5 +1,6 @@
 import type { Config, Context } from "@netlify/functions";
 import { checkAgentAuth, errorResponse, json } from "../lib/http.mts";
+import { resolveKeys } from "../lib/keys.mts";
 import { buildInstructions, buildTools } from "../lib/prompt.mts";
 import { leaveCall } from "../lib/recall.mts";
 import { generateReport } from "../lib/report.mts";
@@ -38,8 +39,8 @@ export default async (req: Request, context: Context) => {
 
 /** Erzeugt einen kurzlebigen OpenAI-Realtime-Client-Secret für die Agent-Seite. */
 async function mintRealtimeSecret(session: Session) {
-  const apiKey = Netlify.env.get("OPENAI_API_KEY");
-  if (!apiKey) return errorResponse("OPENAI_API_KEY ist nicht gesetzt.", 500);
+  const apiKey = resolveKeys(null, session).openaiApiKey;
+  if (!apiKey) return errorResponse("Kein OpenAI-API-Key vorhanden (Dev-Tab oder OPENAI_API_KEY).", 500);
   const model = Netlify.env.get("OPENAI_REALTIME_MODEL") || "gpt-realtime";
 
   const res = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
@@ -105,9 +106,12 @@ async function storeEvents(sessionId: string, body: any) {
 /** Bot verlässt das Meeting; anschließend Bericht erstellen. */
 async function leaveAndFinish(session: Session, req: Request) {
   if (session.recallBotId) {
-    await leaveCall(session.recallBotId).catch((err) =>
-      console.error("leave_call fehlgeschlagen:", err),
-    );
+    const keys = resolveKeys(null, session);
+    if (keys.recallApiKey) {
+      await leaveCall({ apiKey: keys.recallApiKey, region: keys.recallRegion }, session.recallBotId).catch(
+        (err) => console.error("leave_call fehlgeschlagen:", err),
+      );
+    }
   }
   session.status = "ended";
   session.endedAt = new Date().toISOString();
