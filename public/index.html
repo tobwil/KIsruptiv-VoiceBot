@@ -92,6 +92,17 @@
             Wissen &amp; erlaubte Antworten <span class="hint">(was der Bot über dich sagen darf, optional)</span>
             <textarea name="knowledge" rows="3" placeholder="z. B. Tobias ist Product Manager. Wir interessieren uns grundsätzlich für KI-Tools. Budgetentscheidungen trifft Tobias selbst."></textarea>
           </label>
+          <div class="field">
+            <span class="field-label">Kontext-Dokumente <span class="hint">(optional, max. 5 Dateien à 8 MB – .txt, .md, .pdf, .docx)</span></span>
+            <input type="file" id="docInput" accept=".txt,.md,.pdf,.docx" multiple hidden />
+            <div class="doc-upload">
+              <button type="button" class="tonal" id="docUploadBtn">
+                <span class="material-symbols-outlined">upload_file</span> Dokumente hinzufügen
+              </button>
+              <span class="doc-hint" id="docHint">Der Text wird extrahiert und dem Bot als Hintergrundwissen mitgegeben.</span>
+            </div>
+            <ul class="doc-list" id="docList"></ul>
+          </div>
           <label>
             Wann ist das Thema „wertig“ genug für echten Kontakt? <span class="hint">(Bewertungskriterien, optional)</span>
             <textarea name="worthinessCriteria" rows="3" placeholder="z. B. Konkretes Produkt mit klarem Preis, Bezug zu unserem Geschäft, keine generische Kaltakquise."></textarea>

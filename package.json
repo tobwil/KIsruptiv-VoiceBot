@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@netlify/blobs": "^11.0.2"
+    "@netlify/blobs": "^11.0.2",
+    "mammoth": "^1.12.2",
+    "unpdf": "^1.8.1"
   },
   "devDependencies": {
     "@netlify/functions": "^6.0.0",

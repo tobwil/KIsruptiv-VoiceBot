@@ -89,6 +89,7 @@ async function create(req: Request): Promise<Response> {
     worthinessCriteria: String(body.worthinessCriteria || ""),
     language: String(body.language || "Deutsch"),
     voice: String(body.voice || "marin"),
+    documents: sanitizeDocuments(body.documents),
   };
 
   const session: Session = {
@@ -188,6 +189,29 @@ async function leave(session: Session, req: Request): Promise<Response> {
 async function regenerateReport(session: Session): Promise<Response> {
   const report = await generateReport(session.id, true);
   return json({ report });
+}
+
+const MAX_DOCS = 5;
+const MAX_DOC_CHARS = 12000;
+const MAX_TOTAL_DOC_CHARS = 30000;
+
+/** Begrenzt hochgeladene Dokumente (Anzahl, Länge pro Dokument, Gesamtlänge). */
+function sanitizeDocuments(raw: unknown): { name: string; text: string }[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const docs: { name: string; text: string }[] = [];
+  let total = 0;
+  for (const entry of raw.slice(0, MAX_DOCS)) {
+    const name = String(entry?.name || "Dokument").slice(0, 120);
+    let text = String(entry?.text || "").trim().slice(0, MAX_DOC_CHARS);
+    if (!text) continue;
+    if (total + text.length > MAX_TOTAL_DOC_CHARS) {
+      text = text.slice(0, Math.max(0, MAX_TOTAL_DOC_CHARS - total));
+      if (!text) break;
+    }
+    total += text.length;
+    docs.push({ name, text });
+  }
+  return docs.length > 0 ? docs : undefined;
 }
 
 function mapStatus(code: string | undefined, fallback: SessionStatus): SessionStatus {

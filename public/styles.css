@@ -162,6 +162,42 @@ button.icon-btn.playing {
   min-height: 16px;
 }
 
+/* ---------- Dokumenten-Upload ---------- */
+.field { margin-bottom: 16px; }
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--md-on-surface-variant);
+  margin-bottom: 6px;
+}
+.doc-upload { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.doc-hint { font-size: 12px; color: var(--md-on-surface-variant); }
+.doc-list { list-style: none; margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.doc-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--md-surface-variant);
+  border-radius: 10px;
+  padding: 8px 8px 8px 14px;
+  font-size: 13.5px;
+}
+.doc-list .material-symbols-outlined { color: var(--md-primary); font-size: 18px; }
+.doc-list .doc-name { font-weight: 500; overflow-wrap: anywhere; }
+.doc-list .doc-size { color: var(--md-on-surface-variant); font-size: 12px; white-space: nowrap; }
+.doc-list .doc-remove {
+  margin-left: auto;
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 50%;
+  color: var(--md-on-surface-variant);
+  cursor: pointer;
+}
+.doc-list .doc-remove:hover { background: var(--md-error-container); color: var(--md-error); }
+.doc-list li.uploading { opacity: 0.65; }
+
 .form-footer {
   display: flex;
   align-items: center;

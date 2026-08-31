@@ -23,6 +23,8 @@ export interface SessionConfig {
   language: string;
   /** OpenAI-Realtime-Stimme, z. B. "marin". */
   voice: string;
+  /** Hochgeladene Kontext-Dokumente (bereits als Text extrahiert). */
+  documents?: { name: string; text: string }[];
 }
 
 export interface Assessment {
