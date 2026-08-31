@@ -63,14 +63,20 @@
               </label>
               <label>
                 Stimme
-                <select name="voice">
-                  <option value="marin" selected>Marin</option>
-                  <option value="cedar">Cedar</option>
-                  <option value="alloy">Alloy</option>
-                  <option value="echo">Echo</option>
-                  <option value="shimmer">Shimmer</option>
-                  <option value="verse">Verse</option>
-                </select>
+                <div class="voice-picker">
+                  <select name="voice" id="voiceSelect">
+                    <option value="marin" selected>Marin</option>
+                    <option value="cedar">Cedar</option>
+                    <option value="alloy">Alloy</option>
+                    <option value="echo">Echo</option>
+                    <option value="shimmer">Shimmer</option>
+                    <option value="verse">Verse</option>
+                  </select>
+                  <button type="button" class="tonal icon-btn" id="previewVoiceBtn" title="Hörbeispiel abspielen" aria-label="Hörbeispiel der ausgewählten Stimme abspielen">
+                    <span class="material-symbols-outlined" id="previewVoiceIcon">play_arrow</span>
+                  </button>
+                </div>
+                <span class="voice-desc" id="voiceDesc"></span>
               </label>
             </div>
           </div>
